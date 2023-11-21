@@ -69,6 +69,7 @@ onLoad(() => {
   <!-- 自定义导航栏 -->
   <CustomNavBar></CustomNavBar>
   <!-- 滚动容器 -->
+  <!-- enable-back-to-top: 点击顶部导航栏滚动条重置 -->
   <scroll-view scroll-y @scrolltolower="onScrolltolower" @refresherrefresh="onRefresherrefresh" class="scroll-view"
     enable-back-to-top refresher-enabled :refresher-triggered="isTriggered">
     <!-- 自定义轮播图 -->
