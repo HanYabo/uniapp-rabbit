@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getHomeBannerAPI } from '@/services/home'
 import CustomNavBar from './components/CustomNavbar.vue'
+import CategoryPannel from './components/CategoryPannel.vue'
 import type { BannerItem } from '@/types/home'
 
 // 轮播图数组对象
@@ -23,9 +24,13 @@ onLoad(() => {
   <CustomNavBar></CustomNavBar>
   <!-- 自定义轮播图 -->
   <XtxSwiper :list="bannerList"></XtxSwiper>
-  <view class="index"></view>
+  <!-- 首页分类 -->
+  <CategoryPannel></CategoryPannel>
+  <view class="index">index</view>
 </template>
 
 <style lang="scss">
-//
+page {
+  background-color: #F7F7F7;
+}
 </style>
