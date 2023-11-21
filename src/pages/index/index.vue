@@ -7,7 +7,7 @@ import CustomNavBar from './components/CustomNavbar.vue'
   <CustomNavBar></CustomNavBar>
   <!-- 自定义轮播图 -->
   <XtxSwiper></XtxSwiper>
-  <view class="index">index</view>
+  <view class="index"></view>
 </template>
 
 <style lang="scss">
