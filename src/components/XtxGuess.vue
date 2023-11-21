@@ -26,13 +26,14 @@ const getHomeGoodsGuessLike = async () => {
     })
   }
   const res = await getHomeGoodsGuessLikeAPI(pageParams)
-  // 初始化数据
+  // 将数据加到列表中
   guessList.value.push(...res.result.items)
-  // 分页条件
+  // 判断当前分页
   if (pageParams.page < res.result.pages) {
-    // 页码累加
+    // 页码+1
     pageParams.page++
   } else {
+    // 数据读完
     finish.value = true
   }
 }
