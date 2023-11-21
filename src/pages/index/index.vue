@@ -5,6 +5,7 @@ import { getHomeBannerAPI, getHomeCategoryAPI, getHomeHotAPI } from '@/services/
 import CustomNavBar from './components/CustomNavbar.vue'
 import CategoryPannel from './components/CategoryPannel.vue'
 import HotPannel from './components/HotPannel.vue'
+import PageSkeleton from './components/PageSkeleton.vue'
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import type { XtxGuessInstance } from '@/components/components'
 // 轮播图数组对象
@@ -19,8 +20,11 @@ const hotList = ref<HotItem[]>([])
 // 猜你喜欢组件实例对象
 const guessRef = ref<XtxGuessInstance>()
 
-// 自定义下拉触发对象
+// 自定义下拉触发标记
 const isTriggered = ref(false)
+
+// 加载中标记
+const isLoading = ref(false)
 
 // 滚动触底事件
 const onScrolltolower = () => {
@@ -34,6 +38,7 @@ const onRefresherrefresh = async () => {
   isTriggered.value = true
   // 重置猜你喜欢组件数据
   guessRef.value?.resetData()
+  // 等待三次获取数据都成功后，执行后续操作
   await Promise.all([getHomeBanner(), getHomeCategory(), getHomeHot()])
   // 关闭动画
   isTriggered.value = false
@@ -58,10 +63,14 @@ const getHomeHot = async () => {
 }
 
 // 页面加载时触发
-onLoad(() => {
-  getHomeBanner()
-  getHomeCategory()
-  getHomeHot()
+onLoad(async () => {
+  isLoading.value = true
+  await Promise.all([
+    getHomeBanner(),
+    getHomeCategory(),
+    getHomeHot()
+  ])
+  isLoading.value = false
 })
 </script>
 
@@ -72,14 +81,17 @@ onLoad(() => {
   <!-- enable-back-to-top: 点击顶部导航栏滚动条重置 -->
   <scroll-view scroll-y @scrolltolower="onScrolltolower" @refresherrefresh="onRefresherrefresh" class="scroll-view"
     enable-back-to-top refresher-enabled :refresher-triggered="isTriggered">
-    <!-- 自定义轮播图 -->
-    <XtxSwiper :list="bannerList"></XtxSwiper>
-    <!-- 首页分类 -->
-    <CategoryPannel :list="categoryList"></CategoryPannel>
-    <!-- 热门推荐 -->
-    <HotPannel :list="hotList"></HotPannel>
-    <!-- 猜你喜欢 -->
-    <XtxGuess ref="guessRef"></XtxGuess>
+    <PageSkeleton v-if="isLoading"></PageSkeleton>
+    <template v-else>
+      <!-- 自定义轮播图 -->
+      <XtxSwiper :list="bannerList"></XtxSwiper>
+      <!-- 首页分类 -->
+      <CategoryPannel :list="categoryList"></CategoryPannel>
+      <!-- 热门推荐 -->
+      <HotPannel :list="hotList"></HotPannel>
+      <!-- 猜你喜欢 -->
+      <XtxGuess ref="guessRef"></XtxGuess>
+    </template>
   </scroll-view>
 </template>
 
