@@ -25,7 +25,7 @@ export const useMemberStore = defineStore(
       clearProfile,
     }
   },
-  // TODO 持久化
+  // 持久化
   {
     // 网页端配置
     // persist: true,
@@ -40,8 +40,8 @@ export const useMemberStore = defineStore(
         },
         setItem(key, val) {
           uni.setStorageSync(key, val)
-        }
-      }
+        },
+      },
     },
   },
 )
