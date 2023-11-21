@@ -11,3 +11,15 @@ export type BannerItem = {
   // 跳转类型
   type: number
 }
+
+/**
+ * 首页-前台分类数据类型
+ */
+export type CategoryItem = {
+  // 图片链接
+  icon: string
+  // id
+  id: string
+  // 分类名称
+  name: string
+}
