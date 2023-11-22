@@ -4,19 +4,32 @@ import { getCategoryTopAPI } from '@/services/category'
 import type { BannerItem } from '@/types/home'
 import type { CategoryTopItem } from '@/types/category'
 import { onLoad } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 // 广告轮播图对象
 const bannerList = ref<BannerItem[]>([])
 
-// 分类列表对象
+// 一级分类列表对象
 const categoryList = ref<CategoryTopItem[]>([])
+
 
 // distributionSite轮播图数据参数，2为分类页面
 const distributionSite = 2
 
 // 激活下标
 const activeIndex = ref(0)
+
+// 根据一级分类列表返回数据获取二级分类数据
+const subCategoryList = computed(() => {
+  return categoryList.value[activeIndex.value]?.children || []
+})
+
+// 当activeIndex发生改变时，打印subCategoryList
+watch(activeIndex, () => {
+  console.log(subCategoryList)
+}, {
+  immediate: true
+})
 
 // 获取轮播图数据
 const getCategoryBanner = async () => {
@@ -27,7 +40,6 @@ const getCategoryBanner = async () => {
 // 获取分类列表数据
 const getCategoryTop = async () => {
   const res = await getCategoryTopAPI()
-  console.log(res)
   categoryList.value = res.result
 }
 onLoad(() => {
@@ -49,9 +61,9 @@ onLoad(() => {
       <!-- TODO -->
       <!-- 左侧：一级分类 -->
       <scroll-view class="primary" scroll-y>
-        <view v-for="(item, index) in categoryList" :key="item.id" class="item"
-          :class="{ active: index === activeIndex }">
-          <text class="name" @tap="activeIndex = index"> {{ item.name }} </text>
+        <view v-for="(item, index) in categoryList" :key="item.id" class="item" :class="{ active: index === activeIndex }"
+          @tap="activeIndex = index">
+          <text class="name"> {{ item.name }} </text>
         </view>
       </scroll-view>
       <!-- 右侧：二级分类 -->
@@ -59,14 +71,14 @@ onLoad(() => {
         <!-- 焦点图 -->
         <XtxSwiper class="banner" :list="bannerList" />
         <!-- 内容区域 -->
-        <view class="panel" v-for="item in categoryList[activeIndex]?.children" :key="item.id">
+        <view class="panel" v-for="item in subCategoryList" :key="item.id">
           <view class="title">
             <text class="name">{{ item.name }}</text>
             <navigator class="more" hover-class="none">全部</navigator>
           </view>
           <view class="section">
-            <navigator v-for="goods in categoryList[activeIndex]?.children[activeIndex].goods" :key="goods.id"
-              class="goods" hover-class="none" :url="`/pages/goods/goods?id=${goods.id}`">
+            <navigator v-for="goods in item.goods" :key="goods.id" class="goods" hover-class="none"
+              :url="`/pages/goods/goods?id=${goods.id}`">
               <image class="image" :src="goods.picture"></image>
               <view class="name ellipsis">{{ goods.name }}</view>
               <view class="price">
