@@ -75,7 +75,6 @@ const onSubmit = async () => {
   })
   // 更新 Store
   memberStore.profile!.nickname = res.result.nickname
-  memberStore.profile!.nickname = res.result.gender
   uni.showToast({
     icon: 'success',
     title: '保存成功',
