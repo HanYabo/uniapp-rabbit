@@ -2,7 +2,8 @@
 import { onLoad } from '@dcloudio/uni-app'
 import { getHotRecommendAPI } from '@/services/hot'
 import type { SubTypeItem } from '@/types/hot'
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { toRef } from 'vue'
 
 // 热门推荐页 标题和url
 const hotMap = [
@@ -21,16 +22,13 @@ const query = defineProps<{
 const bannerPicture = ref('')
 
 // 推荐选项
-const subTypes = ref<SubTypeItem[]>([])
+const subTypes = ref<(SubTypeItem & { finish?: boolean })[]>([])
 
 // 获取当前推荐类型
 const currUrlMap = hotMap.find(item => item.type === query.type)
 
 // 激活下标
 const activeIndex = ref(0)
-
-// 结束标记
-const finish = ref(false)
 
 // 触底激活事件
 const onScrolltolower = async () => {
@@ -42,7 +40,7 @@ const onScrolltolower = async () => {
     currsubType.goodsItems.page++
   } else {
     // 结束
-    finish.value = true
+    currsubType.finish = true
   }
   // 获取数据
   const res = await getHotRecommendAPI(currUrlMap!.url, {
@@ -99,7 +97,7 @@ onLoad(() => {
           </view>
         </navigator>
       </view>
-      <view class="loading-text">{{ finish ? '没有更多数据' : '加载中...' }}</view>
+      <view class="loading-text">{{ item.finish ? '没有更多数据' : '加载中...' }}</view>
     </scroll-view>
   </view>
 </template>
