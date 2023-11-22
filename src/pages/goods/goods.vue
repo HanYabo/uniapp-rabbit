@@ -12,10 +12,14 @@ const query = defineProps<{
   id: string
 }>()
 
+// 商品详情对象
+const goods = ref<GoodsResult>()
+
 // 获取商品信息
 const getGoodsById = async () => {
   const res = await getGoodsByIdAPI(query.id)
   console.log(res)
+  goods.value = res.result
 }
 
 onLoad(() => {
@@ -30,10 +34,9 @@ onLoad(() => {
     <view class="goods">
       <!-- 商品主图 -->
       <view class="preview">
-        <!-- TODO 数据渲染 -->
         <swiper circular>
-          <swiper-item v-for="(item, index) in 10" :key="index">
-            <image mode="aspectFill" src="https://yanxuan-item.nosdn.127.net/99c83709ca5f9fd5c5bb35d207ad7822.png" />
+          <swiper-item v-for="(item, index) in goods?.mainPictures" :key="index">
+            <image mode="aspectFill" :src="item" />
           </swiper-item>
         </swiper>
         <view class="indicator">
@@ -47,10 +50,10 @@ onLoad(() => {
       <view class="meta">
         <view class="price">
           <text class="symbol">¥</text>
-          <text class="number">29.90</text>
+          <text class="number">{{ goods?.price }}</text>
         </view>
-        <view class="name ellipsis">云珍·轻软旅行长绒棉方巾 </view>
-        <view class="desc"> 轻巧无捻小方巾，旅行便携 </view>
+        <view class="name ellipsis">{{ goods?.name }}</view>
+        <view class="desc">{{ goods?.desc }}</view>
       </view>
 
       <!-- 操作面板 -->
@@ -78,18 +81,13 @@ onLoad(() => {
       <view class="content">
         <view class="properties">
           <!-- 属性详情 -->
-          <view class="item">
-            <text class="label">属性名</text>
-            <text class="value">属性值</text>
-          </view>
-          <view class="item">
-            <text class="label">属性名</text>
-            <text class="value">属性值</text>
+          <view class="item" v-for="(item, index) in goods?.details?.properties" :key="index">
+            <text class="label">{{ item.name }}</text>
+            <text class="value">{{ item.value }}</text>
           </view>
         </view>
         <!-- 图片详情 -->
-        <image mode="widthFix" src="https://yanxuan-item.nosdn.127.net/a8d266886d31f6eb0d7333c815769305.jpg"></image>
-        <image mode="widthFix" src="https://yanxuan-item.nosdn.127.net/a9bee1cb53d72e6cdcda210071cbd46a.jpg"></image>
+        <image v-for="(item, index) in goods?.details?.pictures" :key="index" mode="widthFix" :src="item"></image>
       </view>
     </view>
 
@@ -99,13 +97,13 @@ onLoad(() => {
         <text>同类推荐</text>
       </view>
       <view class="content">
-        <navigator v-for="item in 4" :key="item" class="goods" hover-class="none" :url="`/pages/goods/goods?id=`">
-          <image class="image" mode="aspectFill"
-            src="https://yanxuan-item.nosdn.127.net/e0cea368f41da1587b3b7fc523f169d7.png"></image>
-          <view class="name ellipsis">简约山形纹全棉提花毛巾</view>
+        <navigator v-for="(item, index) in goods?.similarProducts" :key="index" class="goods" hover-class="none"
+          :url="`/pages/goods/goods?id=${item.id}`">
+          <image class="image" mode="aspectFill" :src="item.picture"></image>
+          <view class="name ellipsis">{{ item.name }}</view>
           <view class="price">
             <text class="symbol">¥</text>
-            <text class="number">18.50</text>
+            <text class="number">{{ item.price }}</text>
           </view>
         </navigator>
       </view>
