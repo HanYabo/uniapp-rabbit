@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onLoad } from '@dcloudio/uni-app'
 import { getHotRecommendAPI } from '@/services/hot'
-import type { HotResult, SubTypeItem } from '@/types/hot'
+import type { SubTypeItem } from '@/types/hot'
 import { ref } from 'vue';
 
 // 热门推荐页 标题和url
@@ -29,9 +29,29 @@ const currUrlMap = hotMap.find(item => item.type === query.type)
 // 激活下标
 const activeIndex = ref(0)
 
+// 结束标记
+const finish = ref(false)
+
 // 触底激活事件
-const onScrolltolower = () => {
-  console.log('触发了滚动到底部事件')
+const onScrolltolower = async () => {
+  // 获取当前选项
+  const currsubType = subTypes.value[activeIndex.value]
+  // 判断当前页码
+  if (currsubType.goodsItems.page < currsubType.goodsItems.pages) {
+    // 当前页码累加
+    currsubType.goodsItems.page++
+  } else {
+    // 结束
+    finish.value = true
+  }
+  // 获取数据
+  const res = await getHotRecommendAPI(currUrlMap!.url, {
+    subType: currsubType.id,
+    page: currsubType.goodsItems.page,
+    pageSize: currsubType.goodsItems.pageSize,
+  })
+  // 追加数据
+  currsubType.goodsItems.items.push(...res.result.subTypes[activeIndex.value].goodsItems.items)
 }
 
 // 动态设置标题
@@ -44,6 +64,7 @@ const getHotRecommend = async () => {
   subTypes.value = res.result.subTypes
 }
 
+// 页面加载
 onLoad(() => {
   getHotRecommend()
 })
@@ -78,12 +99,12 @@ onLoad(() => {
           </view>
         </navigator>
       </view>
-      <view class="loading-text">加载中...</view>
+      <view class="loading-text">{{ finish ? '没有更多数据' : '加载中...' }}</view>
     </scroll-view>
   </view>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 page {
   height: 100%;
   background-color: #f4f4f4;
