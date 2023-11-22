@@ -4,7 +4,8 @@ import { getCategoryTopAPI } from '@/services/category'
 import type { BannerItem } from '@/types/home'
 import type { CategoryTopItem } from '@/types/category'
 import { onLoad } from '@dcloudio/uni-app'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import PageSkeleton from '@/pages/category/components/PageSkeleton.vue'
 
 // 广告轮播图对象
 const bannerList = ref<BannerItem[]>([])
@@ -19,16 +20,12 @@ const distributionSite = 2
 // 激活下标
 const activeIndex = ref(0)
 
+// 加载判断条件
+const isLoading = ref(true)
+
 // 根据一级分类列表返回数据获取二级分类数据
 const subCategoryList = computed(() => {
   return categoryList.value[activeIndex.value]?.children || []
-})
-
-// 当activeIndex发生改变时，打印subCategoryList
-watch(activeIndex, () => {
-  console.log(subCategoryList)
-}, {
-  immediate: true
 })
 
 // 获取轮播图数据
@@ -42,14 +39,16 @@ const getCategoryTop = async () => {
   const res = await getCategoryTopAPI()
   categoryList.value = res.result
 }
-onLoad(() => {
-  getCategoryBanner()
-  getCategoryTop()
+onLoad(async () => {
+  await Promise.all([getCategoryBanner(),
+  getCategoryTop()])
+  isLoading.value = false
 })
 </script>
 
 <template>
-  <view class="viewport">
+  <PageSkeleton v-if="isLoading"></PageSkeleton>
+  <view class="viewport" v-else>
     <!-- 搜索框 -->
     <view class="search">
       <view class="input">
@@ -58,7 +57,6 @@ onLoad(() => {
     </view>
     <!-- 分类 -->
     <view class="categories">
-      <!-- TODO -->
       <!-- 左侧：一级分类 -->
       <scroll-view class="primary" scroll-y>
         <view v-for="(item, index) in categoryList" :key="item.id" class="item" :class="{ active: index === activeIndex }"
