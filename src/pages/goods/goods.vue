@@ -5,6 +5,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import AddressPannel from './components/AddressPannel.vue'
 import ServicePannel from './components/ServicePannel.vue'
+import PageSkeleton from './components/PageSkeleton.vue'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -28,6 +29,9 @@ const popup = ref<{
 
 // 弹出层控制条件
 const popupName = ref<'address' | 'service'>()
+
+// 判断加载条件
+const isLoading = ref(true)
 
 // 弹出层
 const openPopup = (name: typeof popupName.value) => {
@@ -58,14 +62,16 @@ const getGoodsById = async () => {
   goods.value = res.result
 }
 
-onLoad(() => {
-  getGoodsById()
+// 页面加载
+onLoad(async () => {
+  await getGoodsById()
+  isLoading.value = false
 })
-
 </script>
 
 <template>
-  <scroll-view scroll-y class="viewport">
+  <PageSkeleton v-if="isLoading"></PageSkeleton>
+  <scroll-view scroll-y class="viewport" v-else>
     <!-- 基本信息 -->
     <view class="goods">
       <!-- 商品主图 -->
