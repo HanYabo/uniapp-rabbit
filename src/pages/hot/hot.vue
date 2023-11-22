@@ -29,6 +29,11 @@ const currUrlMap = hotMap.find(item => item.type === query.type)
 // 激活下标
 const activeIndex = ref(0)
 
+// 触底激活事件
+const onScrolltolower = () => {
+  console.log('触发了滚动到底部事件')
+}
+
 // 动态设置标题
 uni.setNavigationBarTitle({ title: currUrlMap!.title })
 
@@ -36,6 +41,7 @@ uni.setNavigationBarTitle({ title: currUrlMap!.title })
 const getHotRecommend = async () => {
   const res = await getHotRecommendAPI(currUrlMap!.url)
   bannerPicture.value = res.result.bannerPicture
+  subTypes.value = res.result.subTypes
 }
 
 onLoad(() => {
@@ -59,9 +65,10 @@ onLoad(() => {
         }}</text>
     </view>
     <!-- 推荐列表 -->
-    <scroll-view scroll-y class="scroll-view">
+    <scroll-view v-show="activeIndex === index" v-for="(item, index) in subTypes" :key="item.id" scroll-y
+      class="scroll-view" @scrolltolower="onScrolltolower">
       <view class="goods">
-        <navigator hover-class="none" class="navigator" v-for=" goods  in  subTypes[0]?.goodsItems.items " :key="goods.id"
+        <navigator hover-class="none" class="navigator" v-for="goods in item.goodsItems.items" :key="goods.id"
           :url="`/pages/goods/goods?id=${goods.id}`">
           <image class="thumb" :src="goods.picture"></image>
           <view class="name ellipsis">{{ goods.desc }}</view>
@@ -71,7 +78,7 @@ onLoad(() => {
           </view>
         </navigator>
       </view>
-      <view class="loading-text">正在加载...</view>
+      <view class="loading-text">加载中...</view>
     </scroll-view>
   </view>
 </template>
