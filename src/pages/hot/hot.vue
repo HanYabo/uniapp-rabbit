@@ -3,7 +3,6 @@ import { onLoad } from '@dcloudio/uni-app'
 import { getHotRecommendAPI } from '@/services/hot'
 import type { SubTypeItem } from '@/types/hot'
 import { ref } from 'vue'
-import { toRef } from 'vue'
 
 // 热门推荐页 标题和url
 const hotMap = [
