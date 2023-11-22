@@ -79,7 +79,8 @@ const onSubmit = async () => {
   const res = await putMemberProfileAPI({
     nickname: profile.value?.nickname,
     gender: profile.value?.gender,
-    birthday: profile.value?.birthday
+    birthday: profile.value?.birthday,
+    profession: profile.value?.profession
   })
   // 更新 Store
   memberStore.profile!.nickname = res.result.nickname
