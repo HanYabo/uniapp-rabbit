@@ -3,6 +3,8 @@ import { getGoodsByIdAPI } from '@/services/goods'
 import type { GoodsResult } from '@/types/goods'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
+import AddressPannel from './components/AddressPannel.vue'
+import ServicePannel from './components/ServicePannel.vue'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -17,6 +19,23 @@ const goods = ref<GoodsResult>()
 
 // 当前轮播图下标
 const currentIndex = ref(0)
+
+// popup弹出层ref对象
+const popup = ref<{
+  open: (type?: UniHelper.UniPopupType) => void
+  close: () => void
+}>()
+
+// 弹出层控制条件
+const popupName = ref<'address' | 'service'>()
+
+// 弹出层
+const openPopup = (name: typeof popupName.value) => {
+  // 修改名称
+  popupName.value = name
+  // 打开弹出层
+  popup.value?.open()
+}
 
 // 当轮播图切换时触发
 const swiperChange: UniHelper.SwiperOnChange = (e) => {
@@ -36,7 +55,6 @@ const imagePreview = (url: string) => {
 // 获取商品信息
 const getGoodsById = async () => {
   const res = await getGoodsByIdAPI(query.id)
-  console.log(res)
   goods.value = res.result
 }
 
@@ -80,14 +98,20 @@ onLoad(() => {
           <text class="label">选择</text>
           <text class="text ellipsis"> 请选择商品规格 </text>
         </view>
-        <view class="item arrow">
+        <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
           <text class="text ellipsis"> 请选择收获地址 </text>
         </view>
-        <view class="item arrow">
+        <view class="item arrow" @tap="openPopup('service')">
           <text class="label">服务</text>
           <text class="text ellipsis"> 无忧退 快速退款 免费包邮 </text>
         </view>
+
+        <!-- uni-popup弹出层 -->
+        <uni-popup ref="popup" type="bottom" background-color="#fff">
+          <AddressPannel v-if="popupName === 'address'" @close="popup?.close()"></AddressPannel>
+          <ServicePannel v-if="popupName === 'service'" @close="popup?.close()"></ServicePannel>
+        </uni-popup>
       </view>
     </view>
 
