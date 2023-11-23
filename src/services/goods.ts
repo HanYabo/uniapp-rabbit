@@ -12,3 +12,4 @@ export const getGoodsByIdAPI = (id: string) => {
     data: { id },
   })
 }
+

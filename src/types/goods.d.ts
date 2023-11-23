@@ -1,5 +1,6 @@
+import { AddressItem } from './goods.d';
 import type { GoodsItem } from './global'
-
+import type { AddressItem } from '@/types/address'
 /**
  * 商品信息
 */
@@ -123,3 +124,5 @@ export type AddressItem = {
   // 省市区
   fullLocation: string
 }
+
+export type AddressItem = AddressItem

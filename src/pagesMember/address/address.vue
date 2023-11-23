@@ -1,5 +1,22 @@
 <script setup lang="ts">
-//
+import { getMemberAddressAPI } from '@/services/address'
+import type { AddressItem } from '@/types/address'
+import { onShow } from '@dcloudio/uni-app'
+import { ref } from 'vue'
+
+// 收货列表对象
+const addressList = ref<AddressItem[]>()
+
+// 获取收货地址列表
+const getMemberAddress = async () => {
+  const res = await getMemberAddressAPI()
+  addressList.value = res.result
+}
+
+// 页面显示时触发
+onShow(() => {
+  getMemberAddress()
+})
 </script>
 
 <template>
@@ -9,29 +26,15 @@
       <view v-if="true" class="address">
         <view class="address-list">
           <!-- 收货地址项 -->
-          <view class="item">
+          <view class="item" v-for="(item, index) in addressList" :key="item.id">
             <view class="item-content">
               <view class="user">
-                hikari
-                <text class="contact">13111111111</text>
-                <text v-if="true" class="badge">默认</text>
+                {{ item.receiver }}
+                <text class="contact">{{ item.contact }}</text>
+                <text v-if="item.isDefault" class="badge">默认</text>
               </view>
-              <view class="locate">广东省 广州市 天河区 hikari</view>
-              <navigator class="edit" hover-class="none" :url="`/pagesMember/address-form/address-form?id=1`">
-                修改
-              </navigator>
-            </view>
-          </view>
-          <!-- 收货地址项 -->
-          <view class="item">
-            <view class="item-content">
-              <view class="user">
-                hikari
-                <text class="contact">13222222222</text>
-                <text v-if="false" class="badge">默认</text>
-              </view>
-              <view class="locate">北京市 北京市 顺义区 hikari</view>
-              <navigator class="edit" hover-class="none" :url="`/pagesMember/address-form/address-form?id=2`">
+              <view class="locate">{{ item.fullLocation }}</view>
+              <navigator class="edit" hover-class="none" :url="`/pagesMember/address-form/address-form?id=${item.id}`">
                 修改
               </navigator>
             </view>
