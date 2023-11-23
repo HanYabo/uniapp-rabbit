@@ -48,7 +48,7 @@ const onSubmit = () => {
   } else {
     postMemberAddress()
   }
-  // 成功
+  // 成功提示
   uni.showToast({
     title: query.id ? '修改成功' : '添加成功',
     icon: 'success'
