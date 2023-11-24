@@ -61,9 +61,7 @@ const imagePreview = (url: string) => {
 const getGoodsById = async () => {
   const res = await getGoodsByIdAPI(query.id)
   goods.value = res.result
-  console.log(res.result)
   // SKU组件所需格式
-  // TODO
   localdata.value = {
     _id: res.result.id,
     name: res.result.name,
@@ -86,7 +84,6 @@ const getGoodsById = async () => {
       }
     })
   }
-  console.log(localdata.value.sku_list)
 }
 
 // 是否显示SKU组件
@@ -94,6 +91,20 @@ const isShowSku = ref(false)
 
 // 商品信息
 const localdata = ref({} as SkuPopupLocaldata)
+
+// 按钮模式
+enum SkuMode {
+  Both = 1,
+  Cart = 2,
+  Buy = 3
+}
+
+const mode = ref<SkuMode>(SkuMode.Both)
+
+const openSkuPopup = (val: SkuMode) => {
+  isShowSku.value = true
+  mode.value = val
+}
 
 // 页面加载
 onLoad(async () => {
@@ -103,7 +114,8 @@ onLoad(async () => {
 </script>
 
 <template>
-  <vk-data-goods-sku-popup v-model="isShowSku" :localdata="localdata" />
+  <vk-data-goods-sku-popup v-model="isShowSku" :localdata="localdata" :mode="mode" add-cart-background-color="#FFA868"
+    buy-now-background-color="#3BBA9B" />
   <PageSkeleton v-if="isLoading"></PageSkeleton>
   <scroll-view scroll-y class="viewport" v-else>
     <!-- 基本信息 -->
@@ -111,7 +123,7 @@ onLoad(async () => {
       <!-- 商品主图 -->
       <view class="preview">
         <swiper circular @change="swiperChange">
-          <swiper-item v-for="(item, index) in goods?.mainPictures" :key="index">
+          <swiper-item v-for="(   item, index   ) in    goods?.mainPictures   " :key="index">
             <image mode="aspectFill" :src="item" @tap="imagePreview(item)" />
           </swiper-item>
         </swiper>
@@ -134,7 +146,7 @@ onLoad(async () => {
 
       <!-- 操作面板 -->
       <view class="action">
-        <view class="item arrow" @tap="isShowSku = true">
+        <view class="item arrow" @tap="openSkuPopup(SkuMode.Both)">
           <text class="label">选择</text>
           <text class="text ellipsis"> 请选择商品规格 </text>
         </view>
@@ -163,13 +175,14 @@ onLoad(async () => {
       <view class="content">
         <view class="properties">
           <!-- 属性详情 -->
-          <view class="item" v-for="(item, index) in goods?.details?.properties" :key="index">
+          <view class="item" v-for="(   item, index   ) in    goods?.details?.properties   " :key="index">
             <text class="label">{{ item.name }}</text>
             <text class="value">{{ item.value }}</text>
           </view>
         </view>
         <!-- 图片详情 -->
-        <image v-for="(item, index) in goods?.details?.pictures" :key="index" mode="widthFix" :src="item"></image>
+        <image v-for="(   item, index   ) in    goods?.details?.pictures   " :key="index" mode="widthFix" :src="item">
+        </image>
       </view>
     </view>
 
@@ -179,8 +192,8 @@ onLoad(async () => {
         <text>同类推荐</text>
       </view>
       <view class="content">
-        <navigator v-for="(item, index) in goods?.similarProducts" :key="index" class="goods" hover-class="none"
-          :url="`/pages/goods/goods?id=${item.id}`">
+        <navigator v-for="(   item, index   ) in    goods?.similarProducts   " :key="index" class="goods"
+          hover-class="none" :url="`/pages/goods/goods?id=${item.id}`">
           <image class="image" mode="aspectFill" :src="item.picture"></image>
           <view class="name ellipsis">{{ item.name }}</view>
           <view class="price">
@@ -204,8 +217,8 @@ onLoad(async () => {
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view class="addcart" @tap="openSkuPopup(SkuMode.Cart)"> 加入购物车 </view>
+      <view class="buynow" @tap="openSkuPopup(SkuMode.Buy)"> 立即购买 </view>
     </view>
   </view>
 </template>
