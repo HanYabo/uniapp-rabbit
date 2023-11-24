@@ -6,7 +6,9 @@ import { ref } from 'vue'
 import AddressPannel from './components/AddressPannel.vue'
 import ServicePannel from './components/ServicePannel.vue'
 import PageSkeleton from './components/PageSkeleton.vue'
-import type { SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import type { SkuPopupEvent, SkuPopupInstance, SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import { computed } from 'vue'
+import { postMemberCartAPI } from '@/services/cart'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -101,9 +103,28 @@ enum SkuMode {
 
 const mode = ref<SkuMode>(SkuMode.Both)
 
+// 打开SKU组件弹窗的触发事件
 const openSkuPopup = (val: SkuMode) => {
   isShowSku.value = true
   mode.value = val
+}
+
+// SKU组件实例
+const skuPopupRef = ref<SkuPopupInstance>()
+// 计算被选中的值
+const selectArrText = computed(() => {
+  return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
+})
+
+// 加入购物车事件
+const onAddCart = async (e: SkuPopupEvent) => {
+  await postMemberCartAPI({ skuId: e._id, count: e.buy_num })
+  uni.showToast({
+    icon: 'success',
+    title: '添加成功'
+  })
+  // 关闭SKU组件
+  isShowSku.value = false
 }
 
 // 页面加载
@@ -115,7 +136,8 @@ onLoad(async () => {
 
 <template>
   <vk-data-goods-sku-popup v-model="isShowSku" :localdata="localdata" :mode="mode" add-cart-background-color="#FFA868"
-    buy-now-background-color="#3BBA9B" />
+    buy-now-background-color="#3BBA9B" ref="skuPopupRef"
+    :actived-style="{ color: '#27BA9B', borderColor: '#27BA9B', backgroundColor: '#E9F8F5' }" @add-cart="onAddCart" />
   <PageSkeleton v-if="isLoading"></PageSkeleton>
   <scroll-view scroll-y class="viewport" v-else>
     <!-- 基本信息 -->
@@ -148,7 +170,7 @@ onLoad(async () => {
       <view class="action">
         <view class="item arrow" @tap="openSkuPopup(SkuMode.Both)">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis"> {{ selectArrText }} </text>
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
@@ -175,13 +197,13 @@ onLoad(async () => {
       <view class="content">
         <view class="properties">
           <!-- 属性详情 -->
-          <view class="item" v-for="(   item, index   ) in    goods?.details?.properties   " :key="index">
+          <view class="item" v-for="(item, index) in goods?.details?.properties " :key="index">
             <text class="label">{{ item.name }}</text>
             <text class="value">{{ item.value }}</text>
           </view>
         </view>
         <!-- 图片详情 -->
-        <image v-for="(   item, index   ) in    goods?.details?.pictures   " :key="index" mode="widthFix" :src="item">
+        <image v-for="(item, index) in goods?.details?.pictures" :key="index" mode="widthFix" :src="item">
         </image>
       </view>
     </view>
