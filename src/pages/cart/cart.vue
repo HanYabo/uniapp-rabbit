@@ -63,6 +63,38 @@ const onSelecteAllChange = async () => {
   await putMemberCartSelectedAPI({ selected: isAllSelected })
 }
 
+// 计算选中商品列表
+const selectedList = computed(() => {
+  return cartList.value.filter(item => item.selected)
+})
+
+// 计算选中商品个数
+const selectedCount = computed(() => {
+  return selectedList.value.reduce((acc, curr) => {
+    return acc + curr.count
+  }, 0)
+})
+
+// 计算总金额
+const totalPrice = computed(() => {
+  return selectedList.value.reduce((acc, curr) => {
+    return acc + curr.count * curr.nowPrice
+  }, 0).toFixed(2)
+})
+
+// 去结算
+const gotoPayment = () => {
+  if (selectedCount.value === 0) {
+    return uni.showToast({
+      title: '请选择商品',
+      icon: 'none'
+    })
+  }
+  // 跳转到结算页面
+  // TODO
+  uni.showToast({ title: '等待完成' })
+}
+
 // 页面显示触发
 onShow(() => {
   // 用户登录才允许调用
@@ -126,9 +158,10 @@ onShow(() => {
       <view class="toolbar">
         <text class="all" :class="{ checked: isSelectedAll }" @tap="onSelecteAllChange">全选</text>
         <text class="text">合计:</text>
-        <text class="amount">100</text>
+        <text class="amount">{{ totalPrice }}</text>
         <view class="button-grounp">
-          <view class="button payment-button" :class="{ disabled: true }"> 去结算(10) </view>
+          <view class="button payment-button" @tap="gotoPayment" :class="{ disabled: selectedCount === 0 }"> 去结算({{
+            selectedCount }}) </view>
         </view>
       </view>
     </template>
