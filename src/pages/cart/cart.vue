@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
-import { getMemberCartAPI, deleteMemberCartAPI, putMemberCartBySkuIdAPI } from '@/services/cart'
+import { getMemberCartAPI, deleteMemberCartAPI, putMemberCartBySkuIdAPI, putMemberCartSelectedAPI } from '@/services/cart'
 import { useMemberStore } from '@/stores'
 import type { CartItem } from '@/types/cart'
 import { onShow } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 // 会员信息
 const memeberStore = useMemberStore()
 
 // 购物车列表对象
-const cartList = ref<CartItem[]>()
+const cartList = ref<CartItem[]>([])
 // 获取购物车列表
 const getMemberCart = async () => {
   const res = await getMemberCartAPI()
@@ -36,6 +36,31 @@ const onCountChange = async (e: InputNumberBoxEvent) => {
   // index skuId
   // value count
   await putMemberCartBySkuIdAPI(e.index, { count: e.value })
+}
+
+// 修改选中状态-单品修改
+const onSelectedChange = (item: CartItem) => {
+  // 前端更新
+  item.selected = !item.selected
+  // 后端更新
+  putMemberCartBySkuIdAPI(item.skuId, { selected: item.selected })
+}
+
+// 计算全选状态
+const isSelectedAll = computed(() => {
+  return cartList.value.length && cartList.value.every(item => item.selected)
+})
+
+// 修改全选状态
+const onSelecteAllChange = async () => {
+  // 全选状态取反
+  const isAllSelected = !isSelectedAll.value
+  // 页面数据更新
+  cartList.value.forEach(item => {
+    item.selected = isAllSelected
+  })
+  // 调用接口，修改后端全选状态
+  await putMemberCartSelectedAPI({ selected: isAllSelected })
 }
 
 // 页面显示触发
@@ -65,7 +90,7 @@ onShow(() => {
             <!-- 商品信息 -->
             <view class="goods">
               <!-- 选中状态 -->
-              <text class="checkbox" :class="{ checked: item.selected }"></text>
+              <text class="checkbox" :class="{ checked: item.selected }" @tap="onSelectedChange(item)"></text>
               <navigator :url="`/pages/goods/goods?id=${item.id}`" hover-class="none" class="navigator">
                 <image mode="aspectFill" class="picture" :src="item.picture"></image>
                 <view class="meta">
@@ -99,7 +124,7 @@ onShow(() => {
       </view>
       <!-- 吸底工具栏 -->
       <view class="toolbar">
-        <text class="all" :class="{ checked: true }">全选</text>
+        <text class="all" :class="{ checked: isSelectedAll }" @tap="onSelecteAllChange">全选</text>
         <text class="text">合计:</text>
         <text class="amount">100</text>
         <view class="button-grounp">

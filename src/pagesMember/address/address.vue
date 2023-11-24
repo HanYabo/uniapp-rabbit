@@ -5,7 +5,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 
 // 收货列表对象
-const addressList = ref<AddressItem[]>()
+const addressList = ref<AddressItem[]>([])
 
 // 获取收货地址列表
 const getMemberAddress = async () => {
@@ -15,7 +15,7 @@ const getMemberAddress = async () => {
 
 // 定义计算属性，计算收货地址列表是否有值
 const addressIsEmpty = computed(() => {
-  return addressList.value!.length > 0
+  return addressList.value.length > 0
 })
 
 // 删除地址
