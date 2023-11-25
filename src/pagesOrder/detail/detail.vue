@@ -6,6 +6,7 @@ import { onLoad, onReady } from '@dcloudio/uni-app'
 import type { OrderResult } from '@/types/order'
 import { OrderState, orderStateList } from '@/services/constants'
 import PageSkeleton from '../detail/components/PageSkeleton.vue'
+import { getPayMockAPI, getPayWxPayMiniPayAPI } from '@/services/pay'
 
 
 // 获取屏幕边界到安全区域距离
@@ -86,6 +87,20 @@ onReady(() => {
     })
 })
 
+// 订单支付
+const onOrderPay = async () => {
+  if (import.meta.env.DEV) {
+    // 开发环境：模拟支付，修改订单状态为已支付
+    await getPayMockAPI({ orderId: query.id })
+  } else {
+    // 生产环境：获取支付参数 + 发起微信支付
+    const res = await getPayWxPayMiniPayAPI({ orderId: query.id })
+    wx.requestPayment(res.result)
+  }
+  // 关闭当前页，再跳转支付结果页面
+  uni.redirectTo({ url: `/pagesOrder/payment/payment?orderId=${query.id}` })
+}
+
 onLoad(() => {
   getMemberOrderDetail()
 })
@@ -115,12 +130,12 @@ const onTimeup = () => {
         <template v-if="orderDetail?.orderState === OrderState.DaiFuKuan">
           <view class="status icon-clock">等待付款</view>
           <view class="tips">
-            <text class="money">应付金额: ¥ 99.00</text>
+            <text class="money">应付金额: ¥ {{ orderDetail?.payMoney }}</text>
             <text class="time">支付剩余</text>
             <uni-countdown :second="orderDetail?.countdown" color="#fff" splitor-color="#fff" :show-day="false"
               :show-colon="false" @timeup="onTimeup"></uni-countdown>
           </view>
-          <view class="button">去支付</view>
+          <view class="button" @tap="onOrderPay">去支付</view>
         </template>
         <!-- 其他订单状态:展示再次购买按钮 -->
         <template v-else>
@@ -140,7 +155,7 @@ const onTimeup = () => {
         <!-- 订单物流信息 -->
         <view v-for="item in 1" :key="item" class="item">
           <view class="message">
-            您已在广州市天河区黑马程序员完成取件，感谢使用菜鸟驿站，期待再次为您服务。
+            您已在河南师范大学平原湖小区菜鸟驿站完成取件，感谢使用菜鸟驿站，期待再次为您服务。
           </view>
           <view class="date"> 2023-04-14 13:14:20 </view>
         </view>
@@ -179,15 +194,15 @@ const onTimeup = () => {
         <view class="total">
           <view class="row">
             <view class="text">商品总价: </view>
-            <view class="symbol">99.00</view>
+            <view class="symbol">{{ orderDetail.totalMoney }}</view>
           </view>
           <view class="row">
             <view class="text">运费: </view>
-            <view class="symbol">10.00</view>
+            <view class="symbol">{{ orderDetail.postFee }}</view>
           </view>
           <view class="row">
             <view class="text">应付金额: </view>
-            <view class="symbol primary">109.00</view>
+            <view class="symbol primary">{{ orderDetail.payMoney }}</view>
           </view>
         </view>
       </view>
@@ -199,7 +214,7 @@ const onTimeup = () => {
           <view class="item">
             订单编号: {{ query.id }} <text class="copy" @tap="onCopy(query.id)">复制</text>
           </view>
-          <view class="item">下单时间: 2023-04-14 13:14:20</view>
+          <view class="item">下单时间: {{ orderDetail.createTime }}</view>
         </view>
       </view>
 

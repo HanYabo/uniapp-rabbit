@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useGuessList } from '@/composables';
+import { useGuessList } from '@/composables'
 import { useMemberStore } from '@/stores'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -16,7 +16,6 @@ const memberStore = useMemberStore()
 
 // 猜你喜欢组合式函数
 const { guessRef, onScrolltolower } = useGuessList()
-
 
 </script>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
+import { useGuessList } from '@/composables'
 import { getMemberCartAPI, deleteMemberCartAPI, putMemberCartBySkuIdAPI, putMemberCartSelectedAPI } from '@/services/cart'
 import { useMemberStore } from '@/stores'
 import type { CartItem } from '@/types/cart'
@@ -16,6 +17,9 @@ const getMemberCart = async () => {
   const res = await getMemberCartAPI()
   cartList.value = res.result
 }
+
+// 猜你喜欢组件复用
+const { guessRef, onScrolltolower } = useGuessList()
 
 // 点击删除购物车
 const onDeleteCart = (skuId: string) => {
@@ -104,7 +108,7 @@ onShow(() => {
 </script>
 
 <template>
-  <scroll-view scroll-y class="scroll-view">
+  <scroll-view scroll-y class="scroll-view" :enable-back-to-top="true" @scrolltolower="onScrolltolower">
     <!-- 已登录: 显示购物车 -->
     <template v-if="memeberStore.profile">
       <!-- 购物车列表 -->
