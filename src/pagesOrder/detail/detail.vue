@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables'
 import { ref } from 'vue'
+import { getMemberOrderDetailAPI } from '@/services/order'
+import { onLoad } from '@dcloudio/uni-app'
+import type { OrderResult } from '@/types/order';
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -28,13 +31,64 @@ const onCopy = (id: string) => {
 const query = defineProps<{
   id: string
 }>()
+
+// 获取页面站
+const pages = getCurrentPages()
+
+// 获取当前页面实例，数组最后一项
+const pageInstance = pages.at(-1) as any
+
+// 订单详情对象
+const orderDetail = ref<OrderResult>()
+
+// 获取订单详情
+const getMemberOrderDetail = async () => {
+  const res = await getMemberOrderDetailAPI(query.id)
+  console.log(res)
+  orderDetail.value = res.result
+}
+
+// 页面渲染完毕,绑定动画时间
+onLoad(() => {
+  // 动画效果
+  pageInstance.animate(
+    '.navbar',
+    [{ backgroundColor: 'transparent' }, { backgroundColor: '#f8f8f8' }],
+    1000,
+    {
+      scrollSource: '#scroller',
+      timeRange: 1000,
+      startScrollOffset: 0,
+      endScrollOffset: 50
+    }),
+    // 动画效果,导航栏标题
+    pageInstance.animate('.navbar .title',
+      [{ color: 'transparent' }, { color: '#000' }],
+      1000,
+      {
+        scrollSource: '#scroller',
+        timeRange: 1000,
+        startScrollOffset: 0,
+        endScrollOffset: 50,
+      })
+  // 动画效果,导航栏返回按钮
+  pageInstance.animate('.navbar .back',
+    [{ color: '#fff' }, { color: '#000' }],
+    1000,
+    {
+      scrollSource: '#scroller',
+      timeRange: 1000,
+      startScrollOffset: 0,
+      endScrollOffset: 50,
+    })
+})
 </script>
 
 <template>
   <!-- 自定义导航栏: 默认透明不可见, scroll-view 滚动到 50 时展示 -->
   <view class="navbar" :style="{ paddingTop: safeAreaInsets?.top + 'px' }">
     <view class="wrap">
-      <navigator v-if="true" open-type="navigateBack" class="back icon-left"></navigator>
+      <navigator v-if="pages.length > 1" open-type="navigateBack" class="back icon-left"></navigator>
       <navigator v-else url="/pages/index/index" open-type="switchTab" class="back icon-home">
       </navigator>
       <view class="title">订单详情</view>
@@ -78,27 +132,27 @@ const query = defineProps<{
         </view>
         <!-- 用户收货地址 -->
         <view class="locate">
-          <view class="user"> 张三 13333333333 </view>
-          <view class="address"> 广东省 广州市 天河区 黑马程序员 </view>
+          <view class="user"> {{ orderDetail?.receiverContact }} {{ orderDetail?.receiverMobile }} </view>
+          <view class="address"> {{ orderDetail?.receiverAddress }} </view>
         </view>
       </view>
 
       <!-- 商品信息 -->
       <view class="goods">
         <view class="item">
-          <navigator class="navigator" v-for="item in 2" :key="item" :url="`/pages/goods/goods?id=${item}`"
-            hover-class="none">
-            <image class="cover" src="https://yanxuan-item.nosdn.127.net/c07edde1047fa1bd0b795bed136c2bb2.jpg"></image>
+          <navigator class="navigator" v-for="item in orderDetail?.skus" :key="item.id"
+            :url="`/pages/goods/goods?id=${item}`" hover-class="none">
+            <image class="cover" :src="item.image"></image>
             <view class="meta">
-              <view class="name ellipsis">ins风小碎花泡泡袖衬110-160cm</view>
-              <view class="type">藏青小花， 130</view>
+              <view class="name ellipsis">{{ item.name }}</view>
+              <view class="type">{{ item.attrsText }}</view>
               <view class="price">
                 <view class="actual">
                   <text class="symbol">¥</text>
-                  <text>99.00</text>
+                  <text>{{ item.curPrice }}</text>
                 </view>
               </view>
-              <view class="quantity">x1</view>
+              <view class="quantity">{{ item.quantity }}</view>
             </view>
           </navigator>
           <!-- 待评价状态:展示按钮 -->
