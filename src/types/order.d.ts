@@ -111,3 +111,4 @@ export type OrderSkuItem = {
   /** 图片地址 */
   image: string
 }
+
