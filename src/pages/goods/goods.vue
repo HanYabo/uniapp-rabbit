@@ -145,7 +145,7 @@ onLoad(async () => {
       <!-- 商品主图 -->
       <view class="preview">
         <swiper circular @change="swiperChange">
-          <swiper-item v-for="(   item, index   ) in    goods?.mainPictures   " :key="index">
+          <swiper-item v-for="(item, index) in goods?.mainPictures" :key="index">
             <image mode="aspectFill" :src="item" @tap="imagePreview(item)" />
           </swiper-item>
         </swiper>
@@ -214,8 +214,8 @@ onLoad(async () => {
         <text>同类推荐</text>
       </view>
       <view class="content">
-        <navigator v-for="(   item, index   ) in    goods?.similarProducts   " :key="index" class="goods"
-          hover-class="none" :url="`/pages/goods/goods?id=${item.id}`">
+        <navigator v-for="(item, index) in goods?.similarProducts" :key="index" class="goods" hover-class="none"
+          :url="`/pages/goods/goods?id=${item.id}`">
           <image class="image" mode="aspectFill" :src="item.picture"></image>
           <view class="name ellipsis">{{ item.name }}</view>
           <view class="price">
@@ -234,7 +234,7 @@ onLoad(async () => {
       <button class="icons-button" open-type="contact">
         <text class="icon-handset"></text>客服
       </button>
-      <navigator class="icons-button" url="/pages/cart/cart" open-type="switchTab">
+      <navigator class="icons-button" url="/pages/cart/cart2" open-type="navigate">
         <text class="icon-cart"></text>购物车
       </navigator>
     </view>
