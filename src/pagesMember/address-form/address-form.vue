@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { postMemberAddressAPI } from '@/services/address'
-import { getMemberAddressDetailAPI } from '@/services/address'
-import { putMemberAddressDetailAPI } from '@/services/address'
+import { getMemberAddressDetailAPI, putMemberAddressDetailAPI } from '@/services/address'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 
