@@ -127,6 +127,14 @@ const onAddCart = async (e: SkuPopupEvent) => {
   isShowSku.value = false
 }
 
+// 立即购买
+const onBuyNow = (e: SkuPopupEvent) => {
+  // 跳转到生成订单页面
+  uni.navigateTo({
+    url: `/pagesOrder/create/create?skuId=${e._id}&count=${e.buy_num}`
+  })
+}
+
 // 页面加载
 onLoad(async () => {
   await getGoodsById()
@@ -137,7 +145,8 @@ onLoad(async () => {
 <template>
   <vk-data-goods-sku-popup v-model="isShowSku" :localdata="localdata" :mode="mode" add-cart-background-color="#FFA868"
     buy-now-background-color="#3BBA9B" ref="skuPopupRef"
-    :actived-style="{ color: '#27BA9B', borderColor: '#27BA9B', backgroundColor: '#E9F8F5' }" @add-cart="onAddCart" />
+    :actived-style="{ color: '#27BA9B', borderColor: '#27BA9B', backgroundColor: '#E9F8F5' }" @add-cart="onAddCart"
+    @buy-now="onBuyNow" />
   <PageSkeleton v-if="isLoading"></PageSkeleton>
   <scroll-view scroll-y class="viewport" v-else>
     <!-- 基本信息 -->
