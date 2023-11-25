@@ -6,7 +6,7 @@ import { onLoad, onReady } from '@dcloudio/uni-app'
 import type { OrderResult } from '@/types/order'
 import { OrderState, orderStateList } from '@/services/constants'
 import PageSkeleton from '../detail/components/PageSkeleton.vue'
-import { getPayMockAPI, getPayWxPayMiniPayAPI } from '@/services/pay'
+import { getMemberOrderConsignmentByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI } from '@/services/pay'
 
 
 // 获取屏幕边界到安全区域距离
@@ -87,6 +87,17 @@ onReady(() => {
     })
 })
 
+
+onLoad(() => {
+  getMemberOrderDetail()
+})
+
+// 倒计时结束事件
+const onTimeup = () => {
+  // 修改订单状态为已取消
+  orderDetail.value!.orderState = OrderState.YiQuXiao
+}
+
 // 订单支付
 const onOrderPay = async () => {
   if (import.meta.env.DEV) {
@@ -98,17 +109,25 @@ const onOrderPay = async () => {
     wx.requestPayment(res.result)
   }
   // 关闭当前页，再跳转支付结果页面
-  uni.redirectTo({ url: `/pagesOrder/payment/payment?orderId=${query.id}` })
+  uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
 }
 
-onLoad(() => {
-  getMemberOrderDetail()
-})
+// 是否为开发环境
+const isDev = import.meta.env.DEV
 
-// 倒计时结束事件
-const onTimeup = () => {
-  // 修改订单状态为已取消
-  orderDetail.value!.orderState = OrderState.YiQuXiao
+// 模拟发货
+const onOrderShip = async () => {
+  if (isDev) {
+    // 开发环境下
+    await getMemberOrderConsignmentByIdAPI(query.id)
+    uni.showToast({
+      title: '模拟发货成功',
+      icon: 'success'
+    })
+    // 更新订单状况
+    orderDetail.value!.orderState = OrderState.DaiShouHuo
+  }
+
 }
 </script>
 
@@ -146,7 +165,8 @@ const onTimeup = () => {
               再次购买
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-            <view v-if="false" class="button"> 模拟发货 </view>
+            <view v-if="true" class="button" @tap="onOrderShip"> 模拟发货
+            </view>
           </view>
         </template>
       </view>
