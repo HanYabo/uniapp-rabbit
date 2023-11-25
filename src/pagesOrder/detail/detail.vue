@@ -6,7 +6,7 @@ import { onLoad, onReady } from '@dcloudio/uni-app'
 import type { OrderResult } from '@/types/order'
 import { OrderState, orderStateList } from '@/services/constants'
 import PageSkeleton from '../detail/components/PageSkeleton.vue'
-import { getMemberOrderConsignmentByIdAPI, getMemberOrderLogisticsByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI, putMemberOrderReceiptByIdAPI } from '@/services/pay'
+import { deleteMemberOrderAPI, getMemberOrderConsignmentByIdAPI, getMemberOrderLogisticsByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI, putMemberOrderReceiptByIdAPI } from '@/services/pay'
 import type { LogisticItem } from '@/types/pay'
 
 
@@ -156,6 +156,22 @@ const onOrderConfirm = () => {
   })
 }
 
+// 删除订单
+const onOrderDelete = () => {
+  // 二次确认
+  uni.showModal({
+    content: '是否删除订单',
+    success: async (success) => {
+      if (success.confirm) {
+        await deleteMemberOrderAPI({ ids: [query.id] })
+        // 跳转到订单页面
+        uni.redirectTo({ url: '/pagesOrder/list/list' })
+      }
+    },
+  })
+
+}
+
 </script>
 
 <template>
@@ -219,7 +235,7 @@ const onOrderConfirm = () => {
       <view class="goods">
         <view class="item">
           <navigator class="navigator" v-for="item in orderDetail?.skus" :key="item.id"
-            :url="`/pages/goods/goods?id=${item}`" hover-class="none">
+            :url="`/pages/goods/goods?id=${item.spuId}`" hover-class="none">
             <image class="cover" :src="item.image"></image>
             <view class="meta">
               <view class="name ellipsis">{{ item.name }}</view>
@@ -234,7 +250,7 @@ const onOrderConfirm = () => {
             </view>
           </navigator>
           <!-- 待评价状态:展示按钮 -->
-          <view class="action" v-if="true">
+          <view class="action" v-if="orderDetail.orderState === OrderState.DaiPingJia">
             <view class="button primary">申请售后</view>
             <navigator url="" class="button"> 去评价 </navigator>
           </view>
@@ -274,8 +290,8 @@ const onOrderConfirm = () => {
       <view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>
       <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
         <!-- 待付款状态:展示支付按钮 -->
-        <template v-if="true">
-          <view class="button primary"> 去支付 </view>
+        <template v-if="orderDetail.orderState === OrderState.DaiFuKuan">
+          <view class="button primary" @tap="onOrderPay"> 去支付 </view>
           <view class="button" @tap="popup?.open?.()"> 取消订单 </view>
         </template>
         <!-- 其他订单状态:按需展示按钮 -->
@@ -284,11 +300,12 @@ const onOrderConfirm = () => {
             再次购买
           </navigator>
           <!-- 待收货状态: 展示确认收货 -->
-          <view class="button primary"> 确认收货 </view>
+          <view class="button primary" v-if="orderDetail.orderState === OrderState.DaiShouHuo"> 确认收货 </view>
           <!-- 待评价状态: 展示去评价 -->
-          <view class="button"> 去评价 </view>
+          <view class="button" v-if="orderDetail.orderState === OrderState.DaiPingJia"> 去评价 </view>
           <!-- 待评价/已完成/已取消 状态: 展示删除订单 -->
-          <view class="button delete"> 删除订单 </view>
+          <view class="button delete" v-if="orderDetail.orderState === OrderState.DaiPingJia" @tap="onOrderDelete"> 删除订单
+          </view>
         </template>
       </view>
     </template>
