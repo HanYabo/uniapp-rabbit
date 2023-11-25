@@ -6,7 +6,7 @@ import { onLoad, onReady } from '@dcloudio/uni-app'
 import type { OrderResult } from '@/types/order'
 import { OrderState, orderStateList } from '@/services/constants'
 import PageSkeleton from '../detail/components/PageSkeleton.vue'
-import { getMemberOrderConsignmentByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI } from '@/services/pay'
+import { getMemberOrderConsignmentByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI, putMemberOrderReceiptByIdAPI } from '@/services/pay'
 
 
 // 获取屏幕边界到安全区域距离
@@ -127,7 +127,21 @@ const onOrderShip = async () => {
     // 更新订单状况
     orderDetail.value!.orderState = OrderState.DaiShouHuo
   }
+}
 
+// 确认收货
+const onOrderConfirm = () => {
+  // 二次弹窗确认
+  uni.showModal({
+    content: '为保障您的权益，请收到货并确认无误后，再确认收货',
+    success: async (succes) => {
+      if (succes.confirm) {
+        const res = await putMemberOrderReceiptByIdAPI(query.id)
+        // 更新订单状态
+        orderDetail.value = res.result
+      }
+    }
+  })
 }
 </script>
 
@@ -165,8 +179,10 @@ const onOrderShip = async () => {
               再次购买
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-            <view v-if="true" class="button" @tap="onOrderShip"> 模拟发货
+            <view v-if="isDev && orderDetail.orderState === OrderState.DaiFaHuo" class="button" @tap="onOrderShip"> 模拟发货
             </view>
+            <!-- 待收货状态：展示确认收货按钮 -->
+            <view v-if="orderDetail.orderState === OrderState.DaiShouHuo" class="button" @tap="onOrderConfirm">确认收货</view>
           </view>
         </template>
       </view>
