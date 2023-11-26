@@ -36,7 +36,7 @@ const activeIndex = ref(orderTabs.value.findIndex(item => item.orderState === Nu
       <!-- 滑动项 -->
       <swiper-item v-for="item in orderTabs" :key="item.orderState">
         <!-- 订单列表 -->
-        <OrderList :orderState="item.orderState" />
+        <OrderList :orderState="item.orderState"/>
       </swiper-item>
     </swiper>
   </view>

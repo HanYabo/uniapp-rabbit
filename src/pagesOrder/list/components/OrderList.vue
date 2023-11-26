@@ -16,47 +16,67 @@ const props = defineProps<{
 // 订单详情列表
 const orderList = ref<OrderItem[]>([])
 
-// 页面对象
-const listInfo = ref({
-  page: 0,
-  pageSize: 0,
-  pages: 0
+// 分页参数
+const pageParams = ref({
+  page: 1,
+  pageSize: 5,
 })
 
-// 获取订单详情列表
-const getMemberOrderList = async () => {
-  const res = await getMemberOrderListAPI({
-    page: 1,
-    pageSize: 10,
-    orderState: props.orderState
-  })
-  // 将res.result身上的page，pageSize，orderState属性赋值在listInfo身上
-  listInfo.value = {
-    page: res.result.page,
-    pageSize: res.result.pageSize,
-    pages: res.result.pages
-  }
-  orderList.value = res.result.items
-}
+// 是否在加载
+const isLoading = ref(false)
+
+// 下拉自定义触发对象
+const isTriggered = ref(false)
 
 // 触底判断对象
 const isOver = ref(false)
 
-// 触底事件
-const onScrolltolower = async () => {
-  // 触底时判断page页数是否大于pages，如果不大于则page增1，并且调用接口重新获取数据
-  if (listInfo.value.page < listInfo.value.pages) {
-    listInfo.value.page++
-    const res = await getMemberOrderListAPI({
-      page: listInfo.value.page,
-      pageSize: listInfo.value.pageSize,
-      orderState: props.orderState
+// 获取订单详情列表
+const getMemberOrderList = async () => {
+  // 如果处于加载状态，则取消请求
+  if (isLoading.value) return
+  // 如果分页到底
+  if (isOver.value) {
+    return uni.showToast({
+      icon: 'none',
+      title: '没有更多数据'
     })
-    orderList.value = orderList.value.concat(res.result.items)
+  }
+  // 将标记改为加载中
+  isLoading.value = true
+  const res = await getMemberOrderListAPI({
+    page: pageParams.value.page,
+    pageSize: pageParams.value.pageSize,
+    orderState: props.orderState
+  })
+  // 发送请求后重置标记
+  isLoading.value = false
+  // 更新数据
+  orderList.value.push(...res.result.items)
+  // 更新分页条件
+  if (pageParams.value.page < res.result.pages) {
+    // 页码加1
+    pageParams.value.page++
   } else {
+    // 标记为结束
     isOver.value = true
   }
 }
+
+// 自定义下拉刷新被触发
+const onRefresherrefresh = async () => {
+  // 开始动画
+  isTriggered.value = true
+  // 重置数据
+  pageParams.value.page = 1
+  orderList.value = []
+  isOver.value = false
+  // 加载数据
+  await getMemberOrderList()
+  // 关闭动画
+  isTriggered.value = false
+}
+
 
 // 订单支付
 const onOrderPay = async (id: string) => {
@@ -85,10 +105,13 @@ const onOrderConfirm = (id: string) => {
     success: async (succes) => {
       if (succes.confirm) {
         await putMemberOrderReceiptByIdAPI(id)
-        await getMemberOrderList()
         uni.showToast({
+          icon: 'success',
           title: '确认收货成功'
         })
+        // 确认成功，更新为待评价
+        const order = orderList.value.find(item => item.id === id)
+        order!.orderState = OrderState.DaiPingJia
       }
     }
   })
@@ -102,11 +125,9 @@ const onOrderDelete = (id: string) => {
     success: async (success) => {
       if (success.confirm) {
         await deleteMemberOrderAPI({ ids: [id] })
-        await getMemberOrderList()
-        // 等待上述操作完成时，才执行showToast这一操作
-        uni.showToast({
-          title: '删除成功'
-        })
+        // 删除成功，界面中删除订单
+        const index = orderList.value.findIndex((item) => item.id === id)
+        orderList.value.splice(index, 1)
       }
     },
   })
@@ -119,7 +140,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <scroll-view scroll-y class="orders" enable-back-to-top @scrolltolower="onScrolltolower">
+  <scroll-view scroll-y class="orders" enable-back-to-top @scrolltolower="getMemberOrderList"
+    :refresher-triggered="isTriggered" @refresherrefresh="onRefresherrefresh">
     <view class="card" v-for="order in orderList" :key="order.id">
       <!-- 订单信息 -->
       <view class="status">
