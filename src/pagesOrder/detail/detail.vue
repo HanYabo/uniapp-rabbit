@@ -6,7 +6,7 @@ import { onLoad, onReady } from '@dcloudio/uni-app'
 import type { OrderResult } from '@/types/order'
 import { OrderState, orderStateList } from '@/services/constants'
 import PageSkeleton from '../detail/components/PageSkeleton.vue'
-import { deleteMemberOrderAPI, getMemberOrderConsignmentByIdAPI, getMemberOrderLogisticsByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI, putMemberOrderReceiptByIdAPI } from '@/services/pay'
+import { deleteMemberOrderAPI, getMemberOrderCancelByIdAPI, getMemberOrderConsignmentByIdAPI, getMemberOrderLogisticsByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI, putMemberOrderReceiptByIdAPI } from '@/services/pay'
 import type { LogisticItem } from '@/types/pay'
 
 
@@ -50,6 +50,7 @@ const orderDetail = ref<OrderResult>()
 const getMemberOrderDetail = async () => {
   const res = await getMemberOrderDetailAPI(query.id)
   orderDetail.value = res.result
+  // 状态为：待收货 ，待评价，已完成时显示物流信息
   if ([OrderState.DaiShouHuo, OrderState.DaiPingJia, OrderState.YiWanCheng].includes(
     orderDetail.value.orderState
   )) {
@@ -138,6 +139,7 @@ const onOrderShip = async () => {
     })
     // 更新订单状况
     orderDetail.value!.orderState = OrderState.DaiShouHuo
+    getMemberOrderLogisticsById()
   }
 }
 
@@ -151,6 +153,7 @@ const onOrderConfirm = () => {
         const res = await putMemberOrderReceiptByIdAPI(query.id)
         // 更新订单状态
         orderDetail.value = res.result
+        getMemberOrderLogisticsById()
       }
     }
   })
@@ -169,9 +172,17 @@ const onOrderDelete = () => {
       }
     },
   })
-
 }
 
+// 取消订单
+const onOrderCancel = async () => {
+  if (orderDetail.value?.orderState === OrderState.DaiFuKuan) {
+    await getMemberOrderCancelByIdAPI(query.id, { cancelReason: reason.value })
+    // 关闭弹窗
+    popup.value?.close?.()
+    getMemberOrderDetail()
+  }
+}
 </script>
 
 <template>
@@ -327,7 +338,7 @@ const onOrderDelete = () => {
       </view>
       <view class="footer">
         <view class="button" @tap="popup?.close?.()">取消</view>
-        <view class="button primary">确认</view>
+        <view class="button primary" @tap="onOrderCancel">确认</view>
       </view>
     </view>
   </uni-popup>

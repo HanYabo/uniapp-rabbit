@@ -1,5 +1,5 @@
 import type { OrderResult } from "@/types/order"
-import type { OrderLogisticResult } from "@/types/pay"
+import type { OrderListParams, OrderListResult, OrderLogisticResult } from "@/types/pay"
 import { http } from "@/utils/http"
 
 /**
@@ -72,6 +72,31 @@ export const deleteMemberOrderAPI = (data: { ids: string[] }) => {
     method: 'DELETE',
     url: `/member/order`,
     data,
+  })
+}
+
+/**
+ * 取消订单
+ * @description 仅在订单状态为待付款时，可取消订单。
+ * @param id 订单id
+ * @param data cancelReason 取消理由
+ */
+export const getMemberOrderCancelByIdAPI = (id: string, data: { cancelReason: string }) => {
+  return http<OrderResult>({
+    method: 'PUT',
+    url: `/member/order/${id}/cancel`,
+    data,
+  })
+}
+
+/**
+ * 获取订单列表
+ */
+export const getMemberOrderListAPI = (data: OrderListParams) => {
+  return http<OrderListResult>({
+    method: 'GET',
+    url: '/member/order',
+    data
   })
 }
 
